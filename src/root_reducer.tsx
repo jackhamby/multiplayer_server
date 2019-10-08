@@ -43,7 +43,7 @@ export const connectPlayer = (player: Player) => {
 }
 
 const initialState = {
-    isConnected: false,
+    isConnected: true,
     players: {},
     currentPlayerId: ""
 } as AppState;
@@ -52,20 +52,45 @@ const initialState = {
 export const rootReducer = (state: AppState = initialState, action) => {
     switch(action.type){
         case (CONNECT_PLAYER):
+                console.log('\n')
+                console.log('connect player hooked into reducer');
+                console.log('\n')
             var x = 2
             return {
                 ...state
             };
         case (UPDATE_PLAYER):
+            console.log('\n')
+            console.log('update player hooked into reducer');
+            console.log(action.player)
+            console.log('\n')
             var x = 2
+            action.player.x += action.player.xVelocity;
+            action.player.y += action.player.yVelocity;
+            try{
+                return {
+                    ...state,
+                    players:{
+                        ...state.players,
+                        [action.player.id] : action.player
+                    }
+                };
+            }
+            catch {
+                return {
+                    ...state
+                }
+            }
+   
+        case (DISCONNECT_PLAYER):
+            console.log('\n')
+            console.log('disconnect hooked into reducer');
+            console.log(action.id)
+            console.log('\n')
+            delete state.players[action.id];
             return {
                 ...state
             };
-        case (DISCONNECT_PLAYER):
-            var x = 2;
-            return {
-                ...state
-            }
         default:
             return {
                 ...state

@@ -9,23 +9,28 @@ const socket_io_1 = __importDefault(require("socket.io"));
 const messages_1 = require("./types/messages");
 const root_reducer_1 = require("./root_reducer");
 const redux_1 = require("redux");
+const helpers_1 = require("./util/helpers");
 const app = express_1.default();
 const httpServer = http_1.default.createServer(app);
 const io = socket_io_1.default(httpServer, {});
 let store = redux_1.createStore(root_reducer_1.rootReducer);
 let state = {
     players: {},
-    error: null
+    error: null,
+    isConnected: true
 };
 io.listen(3001);
+setInterval(() => {
+    io.sockets.emit("message", messages_1.updateMessage(store.getState()));
+}, 100);
 const handleMessage = (message) => {
     switch (message.type) {
         case (messages_1.DISCONNECT_MESSAGE):
-            console.log(`disconnect player ${message.data.id}`);
+            // console.log(`disconnect player ${message.data.id}`);
             store.dispatch(root_reducer_1.disconnectPlayer(message.data.id));
             break;
         case (messages_1.UPDATE_PLAYER_MESSAGE):
-            console.log(`update player ${message.data.player.id}`);
+            // console.log(`update player ${message.data.player.id}`);
             store.dispatch(root_reducer_1.updatePlayer(message.data.player));
             console.log(store.getState());
             break;
@@ -34,7 +39,10 @@ const handleMessage = (message) => {
     }
 };
 io.on('connection', function (socket) {
-    socket.send(messages_1.welcomeMessage("playerid", state));
+    const newPlayer = helpers_1.createPlayer();
+    store.dispatch(root_reducer_1.updatePlayer(newPlayer));
+    socket.send(messages_1.welcomeMessage(newPlayer.id, store.getState()));
+    // store.dispatch(upda)
     socket.on('message', message => {
         console.log(`message from client ${message}`);
         handleMessage(message);

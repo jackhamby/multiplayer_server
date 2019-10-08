@@ -15,26 +15,28 @@ let store = createStore(rootReducer);
 
 let state = {
     players: {},
-    error: null
+    error: null,
+    isConnected: true
 
 } as AppState;
 
 io.listen(3001);
 
+setInterval( () => {
+    io.sockets.emit("message", updateMessage(store.getState()))
+}, 100)
+
 const handleMessage = (message: Message) => {
     switch(message.type){
         case (DISCONNECT_MESSAGE):
-            console.log(`disconnect player ${message.data.id}`);
+            // console.log(`disconnect player ${message.data.id}`);
             store.dispatch(disconnectPlayer(message.data.id))
             break;
         case (UPDATE_PLAYER_MESSAGE):
-            console.log(`update player ${message.data.player.id}`);
+            // console.log(`update player ${message.data.player.id}`);
             store.dispatch(updatePlayer(message.data.player))
             console.log(store.getState())
             break;
-
-        // case (CONNECT_MESSAGE):
-        //     consoe
         default:
             break;
     }
@@ -43,9 +45,9 @@ const handleMessage = (message: Message) => {
 
 io.on('connection', function(socket){    
     const newPlayer = createPlayer()   
-    socket.send(welcomeMessage(newPlayer.id, state));
-    // store.dispatch(upda)
     store.dispatch(updatePlayer(newPlayer));
+    socket.send(welcomeMessage(newPlayer.id, store.getState()));
+    // store.dispatch(upda)
     socket.on('message', message => {
         console.log(`message from client ${message}`)
         handleMessage(message);

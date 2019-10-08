@@ -4,6 +4,7 @@ export interface AppState {
         [key: string]: Player;
     }
     error?: string;
+    isConnected: boolean;
 }
 
 export interface Player {
